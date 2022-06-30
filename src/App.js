@@ -6,6 +6,8 @@ import Login from './Components/Login/Login';
 import Registration from './Components/Registration/Registration';
 import Dashboard from './Components/Dashboard/Dashboard';
 import Logout from './Components/Logout/Logout';
+import { ToastContainer} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 
 function App() {
@@ -20,6 +22,7 @@ function App() {
           <Route path='/registration' element={<Registration/>}></Route>
           <Route path='/dashboard' element={<Dashboard/>}></Route>
         </Routes>
+        <ToastContainer  autoClose={2000}/>
     </div>
   );
 }

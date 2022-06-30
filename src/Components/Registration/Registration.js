@@ -1,12 +1,70 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import auth from '../Hooks/firebase.init';
+import { useCreateUserWithEmailAndPassword, useUpdateProfile } from 'react-firebase-hooks/auth';
+import Loading from '../Hooks/Loading';
+import { MdError } from 'react-icons/md';
+import useToken from '../Hooks/useToken';
 
 const Registration = () => {
     const { register, formState: { errors }, handleSubmit } = useForm();
+    const [errorMessage, setErrorMessage] = useState('');
+    const [createUserWithEmailAndPassword, user, loading, error] = useCreateUserWithEmailAndPassword(auth);
+    const [updateProfile, updating, updateError] = useUpdateProfile(auth);
+    const [token]=useToken(user)
+    const navigate = useNavigate();
+
+
     // GET FORM DATA
-    const onSubmit = data => {
+    const onSubmit = async data => {
         console.log(data);
+        await createUserWithEmailAndPassword(data?.email, data?.password);
+        await updateProfile({ displayName: data?.name });
+
+        // fetch('http://localhost:5000/api/registration',{
+        //     method:'POST',
+        //     headers:{
+        //         'content-type':'application/json'
+        //     },
+        //     body:JSON.stringify(data)
+        // })
+        // .then(res=>res.json())
+        // .then(data=>{
+        //     if(data.insertedId){
+        //         toast.success('User Registered Successfully', {
+        //             position: toast.POSITION.BOTTOM_CENTER
+        //         })
+        //         navigate('/login')
+        //     }else{
+        //         toast.error('Fail to Register.Try Again.', {
+        //             position: toast.POSITION.BOTTOM_CENTER
+        //         })
+        //     }
+        // })
+    }
+    
+    if (token) {
+        toast.success('User Registered Successfully', {
+            position: toast.POSITION.BOTTOM_CENTER
+        })
+        navigate('/');
+    }
+
+    // SET ERROR MESSAGES
+    useEffect(() => {
+        if (error || updateError) {
+            const message = error?.code.split('/')[1] || updateError?.code.split('/')[1];
+            setErrorMessage(message)
+        } else {
+            setErrorMessage('')
+        }
+    }, [error, updateError]);
+
+    // SHOWING LOADDING STATUS
+    if (updating || loading) {
+        return <Loading />
     }
     return (
         <div class="hero min-h-screen bg-base-200">
@@ -19,6 +77,13 @@ const Registration = () => {
                 <div class="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
                     <div class="card-body">
                         <form onSubmit={handleSubmit(onSubmit)}>
+                            {/* SHOWING LOGIN ERRORS */}
+                            {
+                                errorMessage &&
+                                <div className="alert  shadow-md">
+                                    <span className='mx-auto font-semibold text-[14px] text-red-600'><MdError />{errorMessage}</span>
+                                </div>
+                            }
 
                             {/* name field */}
                             <div className="form-control ">
@@ -73,7 +138,7 @@ const Registration = () => {
                                 <input {...register('password', {
                                     required: {
                                         value: true,
-                                        message: 'Password field is required'
+                                        message: 'Password is required'
                                     },
                                     minLength: {
                                         value: 6,
