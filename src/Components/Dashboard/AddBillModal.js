@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import Loading from '../Hooks/Loading';
 
 
-const AddBillModal = ({ setModalStatus }) => {
+const AddBillModal = ({ setModalStatus,refetch }) => {
     const { register, reset, formState: { errors }, handleSubmit } = useForm();
     const [user, loading, error] = useAuthState(auth);
     if(loading){
@@ -29,7 +29,8 @@ const AddBillModal = ({ setModalStatus }) => {
                 toast.success('Bill Added Successfully', {
                     position: toast.POSITION.BOTTOM_CENTER
                 })
-                setModalStatus(false)
+                setModalStatus(false);
+                refetch();
             }else{
                 toast.error('Fail to add.Try Again.', {
                     position: toast.POSITION.BOTTOM_CENTER
